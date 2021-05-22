@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	bulbNames := os.Args[1:]
+	action := os.Args[1]
+	bulbNames := os.Args[2:]
 	godotenv.Load(".env.local", ".env")
 	client := mqtt.CreateMqttClient(os.Getenv("MQTT_BROKER_URI"), os.Getenv("MQTT_USERNAME"), os.Getenv("MQTT_PASSWORD"))
 	var lights []light.Light
@@ -17,7 +18,37 @@ func main() {
 		lights = append(lights, light.Create(bulbNames[i]))
 	}
 	lightRepository := mqtt.NewLightRepository(client)
-	rainbowRotate(lightRepository, lights...)
+	switch action {
+	case "rainbowRotate":
+		rainbowRotate(lightRepository, lights...)
+		break
+	case "turnOff":
+		turnOff(lightRepository, lights...)
+		break
+	case "warmWhite":
+		warmWhite(lightRepository, lights...)
+		break
+	default:
+		panic("unrecognised command")
+	}
+}
+
+func warmWhite(repository light.Repository, lights ...light.Light) {
+	for i := 0; i < len(lights); i++ {
+		lights[i].TurnOn()
+		lights[i].SetWhite(100)
+		lights[i].SetCT(450)
+	}
+	repository.Publish(lights...)
+	time.Sleep(time.Second)
+}
+
+func turnOff(repository light.Repository, lights ...light.Light) {
+	for i := 0; i < len(lights); i++ {
+		lights[i].TurnOff()
+	}
+	repository.Publish(lights...)
+	time.Sleep(time.Second)
 }
 
 func rainbowRotate(repository light.Repository, lights ...light.Light) {

@@ -1,6 +1,6 @@
 a tiny learning project. using go to control an array of tasmota-based lightbulbs via mqtt
 usage:
 ```
-go run main.go bulb1 bulb2 bulbN ...
+go run main.go command bulb1 bulb2 bulbN ...
 ```
-where `bulb1`, `bulb2`, `bulbN` are the names of mqtt topics for appropriate devices
+where `bulb1`, `bulb2`, `bulbN` are the names of mqtt topics for appropriate devices and `command` is one of `[turnOff, warmWhite, rainbowRotate]`

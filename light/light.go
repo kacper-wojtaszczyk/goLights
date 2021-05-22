@@ -19,6 +19,30 @@ func (event HueChanged) Value() string {
 	return strconv.Itoa(event.hue)
 }
 
+type WhiteChanged struct {
+	white int
+}
+
+func (event WhiteChanged) EventType() string {
+	return "WHITE"
+}
+
+func (event WhiteChanged) Value() string {
+	return strconv.Itoa(event.white)
+}
+
+type CTChanged struct {
+	ct int
+}
+
+func (event CTChanged) EventType() string {
+	return "CT"
+}
+
+func (event CTChanged) Value() string {
+	return strconv.Itoa(event.ct)
+}
+
 type TurnedOn struct {
 }
 
@@ -44,6 +68,8 @@ func (event TurnedOff) Value() string {
 type Light struct {
 	name   string
 	hue    int
+	white  int
+	ct     int
 	power  bool
 	events []Event
 }
@@ -57,27 +83,19 @@ func (light *Light) IncrementHue(increment int) {
 }
 
 func (light *Light) TurnOn() {
-	light.power = true
+	light.recordThat(TurnedOn{})
 }
 
 func (light *Light) TurnOff() {
-	light.power = false
+	light.recordThat(TurnedOff{})
 }
 
-func (light Light) GetPower() bool {
-	return light.power
+func (light *Light) SetCT(ct int) {
+	light.recordThat(CTChanged{ct: ct})
 }
 
-func (light Light) GetHue() int {
-	return light.hue
-}
-
-func (light Light) GetPowerString() string {
-	if light.power {
-		return "ON"
-	}
-
-	return "OFF"
+func (light *Light) SetWhite(white int) {
+	light.recordThat(WhiteChanged{white: white})
 }
 
 func (light *Light) recordThat(event Event) {
@@ -96,6 +114,11 @@ func (light *Light) apply(event Event) {
 	case TurnedOff:
 		light.onTurnedOff()
 		break
+	case WhiteChanged:
+		light.onWhiteChanged(e)
+		break
+	case CTChanged:
+		light.onCtChanged(e)
 	}
 }
 
@@ -122,6 +145,14 @@ func (light Light) GetName() string {
 	return light.name
 }
 
+func (light *Light) onWhiteChanged(event WhiteChanged) {
+	light.white = event.white
+}
+
+func (light *Light) onCtChanged(event CTChanged) {
+	light.ct = event.ct
+}
+
 func Create(name string) Light {
-	return Light{hue: 0, power: false, name: name}
+	return Light{name: name, hue: 0, power: false, white: 0, ct: 0}
 }
