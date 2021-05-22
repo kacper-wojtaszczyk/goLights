@@ -12,8 +12,7 @@ type LightRepository struct {
 
 func (repository LightRepository) Publish(lights ...light.Light) {
 	for i := 0; i < len(lights); i++ {
-		repository.refreshPower(lights[i])
-		repository.refreshHue(lights[i])
+		repository.processEvents(lights[i].GetName(), lights[i].PopEvents())
 	}
 }
 
@@ -27,6 +26,12 @@ func (repository LightRepository) refreshHue(light light.Light) {
 
 func (repository LightRepository) sendMessage(deviceName string, command string, value string) {
 	repository.client.Publish("cmnd/"+deviceName+"/"+command, 0, false, value)
+}
+
+func (repository LightRepository) processEvents(name string, events []light.Event) {
+	for i := 0; i < len(events); i++ {
+		repository.sendMessage(name, events[i].EventType(), events[i].Value())
+	}
 }
 
 func NewLightRepository(client mqtt.Client) LightRepository {
