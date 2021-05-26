@@ -61,9 +61,9 @@ func rainbowRotate(repository light.Repository, lights ...light.Light) {
 	repository.Publish(lights...)
 
 	for {
-		time.Sleep(time.Millisecond * 150)
+		time.Sleep(time.Millisecond * 800)
 		for i := 0; i < len(lights); i++ {
-			lights[i].IncrementHue(5)
+			lights[i].IncrementHue(144)
 		}
 		repository.Publish(lights...)
 	}
