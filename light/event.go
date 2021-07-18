@@ -31,6 +31,20 @@ func (event WhiteChanged) Value() string {
 	return strconv.Itoa(event.white)
 }
 
+
+type BrightnessChanged struct {
+	brightness int
+}
+
+
+func (event BrightnessChanged) EventType() string {
+	return "DIMMER"
+}
+
+func (event BrightnessChanged) Value() string {
+	return strconv.Itoa(event.brightness)
+}
+
 type CTChanged struct {
 	ct int
 }
@@ -63,4 +77,28 @@ func (event TurnedOff) EventType() string {
 
 func (event TurnedOff) Value() string {
 	return "OFF"
+}
+
+type SatChanged struct {
+	sat int
+}
+
+func (event SatChanged) EventType() string {
+	return "HSBCOLOR2"
+}
+
+func (event SatChanged) Value() string {
+	return strconv.Itoa(event.sat)
+}
+
+type FadeSpeedSet struct {
+	speed int
+}
+
+func (event FadeSpeedSet) EventType() string {
+	return "SPEED"
+}
+
+func (event FadeSpeedSet) Value() string {
+	return strconv.Itoa(event.speed)
 }
