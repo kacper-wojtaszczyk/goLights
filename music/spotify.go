@@ -12,7 +12,7 @@ type SpotifyClient struct {
 }
 
 func (client SpotifyClient) GetCurrentTrackAttributes() *spotify.AudioFeatures {
-	return client.getTrackAudioAnalysis(client.getCurrentTrack().ID).Track
+	return client.getTrackAudioAnalysis(client.getCurrentTrack().ID)
 }
 
 func (client SpotifyClient) getCurrentTrack() *spotify.FullTrack {
