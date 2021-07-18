@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/kacper-wojtaszczyk/goLights/light"
 	"github.com/kacper-wojtaszczyk/goLights/mqtt"
 	"github.com/kacper-wojtaszczyk/goLights/music"
+	"github.com/zmb3/spotify"
 	"os"
 	"time"
 )
@@ -14,11 +16,7 @@ func main() {
 	bulbNames := os.Args[2:]
 	godotenv.Load(".env.local", ".env")
 	client := mqtt.CreateMqttClient(os.Getenv("MQTT_BROKER_URI"), os.Getenv("MQTT_USERNAME"), os.Getenv("MQTT_PASSWORD"))
-	spotify := music.CreateSpotifyClient(
-		os.Getenv("SPOTIFY_CLIENT_ID"),
-		os.Getenv("SPOTIFY_CLIENT_SECRET"),
-		os.Getenv("SPOTIFY_REDIRECT_URI"),
-		)
+	spotify := music.CreateSpotifyClient()
 	var lights []light.Light
 	for i := 0; i < len(bulbNames); i++ {
 		lights = append(lights, light.Create(bulbNames[i]))
@@ -28,8 +26,8 @@ func main() {
 	case "rainbowRotate":
 		rainbowRotate(lightRepository, lights...)
 		break
-	case "redshift":
-		redshift(lightRepository, spotify, lights...)
+	case "spo":
+		spo(lightRepository, spotify, lights...)
 		break
 	case "turnOff":
 		turnOff(lightRepository, lights...)
@@ -38,7 +36,7 @@ func main() {
 		warmWhite(lightRepository, lights...)
 		break
 	default:
-		redshift(lightRepository, spotify, lights...)
+		spo(lightRepository, spotify, lights...)
 	}
 }
 
@@ -79,9 +77,11 @@ func rainbowRotate(repository light.Repository, lights ...light.Light) {
 	}
 }
 
-func redshift(repository light.Repository, spotify music.SpotifyClient, lights ...light.Light) {
-	attributes := spotify.GetCurrentTrackAttributes()
-	tempo := int(attributes.Tempo)
+func spo(repository light.Repository, spotifyClient music.SpotifyClient, lights ...light.Light) {
+	trackAttributes := spotifyClient.GetCurrentTrackAttributes()
+	go refreshTrack(trackAttributes, spotifyClient)
+	time.Sleep(time.Second*5)
+
 	for i := 0; i < len(lights); i++ {
 		lights[i].SetBrightness(100)
 		lights[i].SetSat(100)
@@ -98,6 +98,29 @@ func redshift(repository light.Repository, spotify music.SpotifyClient, lights .
 
 		repository.Publish(lights...)
 		shift = (shift + step) % 360
-		time.Sleep(time.Minute/time.Duration(tempo))
+		tempo := int64(trackAttributes.Tempo)
+		if tempo < 1 {
+			tempo = 100
+		}
+		time.Sleep(time.Duration(time.Minute.Nanoseconds()/tempo))
+	}
+}
+
+func refreshTrack(attributes *spotify.AudioFeatures, spotifyClient music.SpotifyClient) {
+	for {
+		freshAttributes := spotifyClient.GetCurrentTrackAttributes()
+		if attributes.ID != freshAttributes.ID {
+			attributes = freshAttributes
+			fmt.Printf(
+				"Tempo: %f	Energy: %f	Danceability: %f	Key: %d	Acousticness: %f\n",
+				attributes.Tempo,
+				attributes.Energy,
+				attributes.Danceability,
+				attributes.Key,
+				attributes.Acousticness,
+			)
+		}
+
+		time.Sleep(time.Second*10)
 	}
 }
