@@ -113,7 +113,7 @@ func spo(repository light.Repository, spotifyClient music.SpotifyClient, lights 
 		if tempo < 1 {
 			tempo = 100
 		}
-		time.Sleep(time.Duration(time.Minute.Microseconds()/tempo))
+		time.Sleep(time.Duration(time.Minute.Nanoseconds()/tempo))
 	}
 }
 
