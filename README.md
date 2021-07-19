@@ -6,7 +6,8 @@ go run main.go command bulb1 bulb2 bulbN ...
 
 where `bulb1`, `bulb2`, `bulbN` are the names of mqtt topics for appropriate devices and `command` is [something](https://github.com/kacper-wojtaszczyk/goLights/blob/7992cfb437eb24c31084956ba9954bbdc830909d/main.go#L25)
 
-![Image](Y2Vr4gR.png "todooooooooo")
+<img src="Y2Vr4gR.png" width="400">
+
 - - [ ] extract the animations from main
   - - [ ] ideally into some comprehensible json or something
 - - [ ] make spotify.PlayerState more JIT (spotify API doesn't provide callbacks afaik)
